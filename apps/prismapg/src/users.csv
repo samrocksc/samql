@@ -1,0 +1,6 @@
+id,name,email,days_active,created_at
+1,Alice Johnson,alice@example.com,30,2023-11-22
+2,Bob Smith,bob@example.com,15,2023-12-01
+3,Charlie Brown,charlie@example.com,45,2023-10-15
+4,David Lee,david@example.com,60,2023-09-01
+5,Eve Miller,eve@example.com,20,2023-12-10

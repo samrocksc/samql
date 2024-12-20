@@ -16,7 +16,14 @@
         "bundle": false,
         "main": "apps/prismapg/src/main.ts",
         "tsConfig": "apps/prismapg/tsconfig.app.json",
-        "assets": ["apps/prismapg/src/assets"],
+        "assets": [
+          "apps/prismapg/src/assets",
+          {
+            "input": ".",
+            "glob": "**/*.csv",
+            "output": "."
+          }
+        ],
         "generatePackageJson": true,
         "esbuildOptions": {
           "sourcemap": true,
@@ -29,7 +36,7 @@
         "development": {},
         "production": {
           "esbuildOptions": {
-            "sourcemap": false,
+            "sourcemap": true,
             "outExtension": {
               ".js": ".js"
             }
@@ -43,7 +50,7 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "prismapg:build",
-        "runBuildTargetDependencies": false
+        "runBuildTargetDependencies": true
       },
       "configurations": {
         "development": {
