@@ -54,6 +54,7 @@ export const sqlSections = {
     description: 'Filters groups based on conditions',
     sequence: 5,
     required: false,
+    parser: [],
     operation: (input: unknown) => {
       log.debug('HAVING', input);
     },

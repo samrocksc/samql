@@ -62,14 +62,13 @@ I want the loader to be part of my feature set to _plug in_ to our query languag
 
 So I wanted to keep things as stripped down as possible so I could design by types, and build implementations. I'm a bit of a fan of Kyle Simpson's [functional lite javascript](https://github.com/getify/Functional-Light-JS).
 
-
-I started off really just getting a feel for the data, and what was coming in and coming out.  While I've built atleast a hundred data parsers at this point in my life ensuring they were in proper ordinality was a bit of a challenge.
+I started off really just getting a feel for the data, and what was coming in and coming out. While I've built atleast a hundred data parsers at this point in my life ensuring they were in proper ordinality was a bit of a challenge.
 
 To solve this I built a feature I really enjoy in my favourite Query Builders, debuggers!
 
 if you want to use it feel free to do `DEBUG=samql:<info | error | debug | query> npx nx serve prismapg` to access the different logs
 
-I really wanted this application to fail often and fail fast, so by returning the header meta data I was able to 
+I really wanted this application to fail often and fail fast, so by returning the header meta data I was able to
 
 So here ultimately is the format I'd like this to look like:
 
@@ -77,16 +76,17 @@ So here ultimately is the format I'd like this to look like:
 import samQl from 'samql';
 
 const main = () => {
-    const users = samQl.load('users.csv');
-    const devices = samQl.load('devices.csv');
+  const users = samQl.load('users.csv');
+  const devices = samQl.load('devices.csv');
 
-    const user = users.query('PROJECT name FILTER id > 1');
-}
+  const user = users.query('PROJECT name FILTER id > 1');
+};
 ```
 
 This allows for stronger extension later on and building the _escape hatch_ into the query language if we choose to build a query builder
 
 ### Process
+
 ---
 
 I want to do the last amount of work possible before a failure to fail fast. Filtering/ordering and retrieval were probably going to be our most expensive commands, but retrieval was a requirement before the other 2 so it was unavoidable:
@@ -109,7 +109,17 @@ Each of these methods contains a different dependence inversion, but will always
 
 ```mermaid
 flowchart TD
-    A["index"] -- Get money --> B("loader")
-    B --> n1["query"]
-    n1 <--> n2["parser"]
+    A["index"] -- "utf-8 string" --> B("loader")
+    B -- (IQueryInput)(string) --> n1["query"]
+    n1 <-- (IParseInput) --> n2["parser"]
+    n3["retriever"] -- IFilterInput --> n4["filter"]
+    n4 -- IOrderInput --> n5["order"]
+    n1 -- IRetrieverInput --> n3
+    n2 --> n6["Operation Nodes"]
+    n6 --> n7["Recursive joins"]
+    n6 -.-> n2
+    n7 -.-> n6
+
+    n6@{ shape: lean-l}
+    n7@{ shape: lean-l}
 ```
