@@ -17,5 +17,8 @@ app.listen(port, host, async () => {
     .document()
     .load(fs.readFileSync(path.resolve(__dirname, './users.csv'), 'utf-8'));
 
-    users.query('PROJECT name, id FILTER createdAt > 2020-01-01 GROUP BY name');
+  const data = await users.query(
+    'PROJECT name, id FILTER id < 2 SORT BY name'
+  );
+  console.log('final result', data);
 });
