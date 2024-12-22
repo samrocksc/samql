@@ -1,5 +1,24 @@
 # A Prisma Query Language for @isaacs LRU-Cache
 
+## How to try it out
+---
+
+I wanted to use Nx to build this project, primarily because it's fun, and it's also easy and quick to spin up a development environment for libraries.  Here are the steps to take to use it:
+
+1. **Clone the repository**
+2. **Install the dependencies** - `npm i`
+3. **Build the project** - `npx nx build prismapg`
+4. **Run the project** - `DEBUG=samql:<info | error | debug | query | etc..> npx nx serve prismapg`
+
+## About the Process
+---
+
+So I wanted to keep things as stripped down as possible so I could design by types, and build implementations. I'm a bit of a fan of Kyle Simpson's [functional lite javascript](https://github.com/getify/Functional-Light-JS).
+
+I started off really just getting a feel for the data, and what was coming in and coming out. While I've built atleast a hundred data parsers at this point in my life ensuring they were in proper ordinality was a bit of a challenge.
+
+I wanted to make it as simple and as close to the document provided as possible.  I am open to extension on both the consumer, and the producer end of this application, so I encourage conversation, and feedback!
+
 ## Technical Decisions
 ---
 
@@ -7,6 +26,16 @@ When starting this project I wanted to first get a little bit of inspiration fro
 
 ### **Diagram**
 ---
+### **Scope** Things I'm leaving at the front door but take into future considerations
+---
+
+1. **indexing** - I'm not going to worry about indexing at this point, but it's something that I'll need to consider in the future. I have cached in the past both with LRU, and kv-storage.  I think that indexing is a good way to handle this, but I'm not going to worry about it at this point.
+   1. **Recommendation** is to handle indexing by building a Trie structure(I'd recommend this [Trie](https://www.npmjs.com/package/trie-search)) package. This allows us to build a tree structure that relates back to an ID.  2. **caching** - I'm not going to worry about caching at this point, but it's something that I'll need to consider in the future.
+   1. **Recommendation** is to handle caching by building a LRU cache structure(I'd recommend this [LRU-Cache](https://www.npmjs.com/package/lru-cache)) package.
+2. **Security** - I'm not going to worry about security at this point, but it's something that I'll need to consider in the future. To me though a database is only as secure as its implementer. So I think this may be a userland feature that we can add in the future. Plain-text attacks are definitely a clear attack vector here though.
+   1. **Recommendation** All security measures should be built with intentionality. Meaning that using 3rd party libraries like Lodash probably isn't a good move. My experience is that Lodash is typically one of the most sought after vulnerability hunts by hackers. So I'd recommend building your own security measures.
+3. **Retrieval Optimization** - While it's super ugly, I wanted to focus on the core of this exercise, understanding and building query language. 
+4. **Presentation layer excellence** - Whether we are interfacing via a REST API, or a GraphQL API.  There are some terminal apps out there, but I don't think it was a requirement for this project.
 
 ```mermaid
 flowchart TD
@@ -29,17 +58,6 @@ flowchart TD
 ```
 
 ### **Language** - I chose to use TypeScript for this project.  I am not proficient in rust
-
-
-## **Scope** Things I'm leaving at the front door but take into future considerations
----
-
-1. **indexing** - I'm not going to worry about indexing at this point, but it's something that I'll need to consider in the future.
-   1. **Recommendation** is to handle indexing by building a Trie structure(I'd recommend this [Trie](https://www.npmjs.com/package/trie-search)) package. This allows us to build a tree structure that relates back to an ID.  2. **caching** - I'm not going to worry about caching at this point, but it's something that I'll need to consider in the future.
-   1. **Recommendation** is to handle caching by building a LRU cache structure(I'd recommend this [LRU-Cache](https://www.npmjs.com/package/lru-cache)) package.
-2. **Security** - I'm not going to worry about security at this point, but it's something that I'll need to consider in the future. To me though a database is only as secure as its implementer. So I think this may be a userland feature that we can add in the future. Plain-text attacks are definitely a clear attack vector here though.
-   1. **Recommendation** All security measures should be built with intentionality. Meaning that using 3rd party libraries like Lodash probably isn't a good move. My experience is that Lodash is typically one of the most sought after vulnerability hunts by hackers. So I'd recommend building your own security measures.
-3. **Retrieval Optimization** - While it's super ugly, I wanted to focus on the core of this exercise, understanding and building query language. 
 
 ### Memory Loading Choice - PapaParse
 ---
@@ -73,21 +91,6 @@ Using this information I was able to generate a _very_ rough looping piece of co
 ---
 
 I want the loader to be part of my feature set to _plug in_ to our query language. There are some things I wanted to have to make error handling easier, and to give the users a head start on building.
-
-## About the Process
----
-
-So I wanted to keep things as stripped down as possible so I could design by types, and build implementations. I'm a bit of a fan of Kyle Simpson's [functional lite javascript](https://github.com/getify/Functional-Light-JS).
-
-I started off really just getting a feel for the data, and what was coming in and coming out. While I've built atleast a hundred data parsers at this point in my life ensuring they were in proper ordinality was a bit of a challenge.
-
-To solve this I built a feature I really enjoy in my favourite Query Builders, debuggers!
-
-if you want to use it feel free to do `DEBUG=samql:<info | error | debug | query | etc..> npx nx serve prismapg` to access the different logs
-
-I really wanted this application to fail often and fail fast, so by returning the header meta data I was able to
-
-So here ultimately is the format I'd like this to look like:
 
 ```typescript
 import samQl from 'samql';
