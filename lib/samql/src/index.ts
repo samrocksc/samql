@@ -1,6 +1,5 @@
 import { ILoadOutput, load } from './lib/loader';
 import { query } from './lib/query';
-export * from './lib/samql';
 export * from './lib/loader';
 
 export type Operations = (input: typeof load) => Readonly<{

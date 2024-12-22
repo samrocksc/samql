@@ -20,14 +20,14 @@ export const load = (
 ): ILoadOutput => {
   const parseData = Papa.parse(file, {
     dynamicTyping: true,
+    header: true,
   });
-
-  const [headers, ...data] = parseData.data;
+  
 
   const normalizedData: IQueryInput = {
     tableName: options?.tableName ?? 'default',
-    headers: headers as string[],
-    data: data as unknown[][],
+    headers: parseData.meta.fields as string[],
+    data: parseData.data as IQueryInput["data"],
     errors: parseData.errors,
     meta: parseData.meta,
     operations: {},

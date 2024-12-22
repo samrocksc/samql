@@ -16,7 +16,7 @@ export const splitStrings = (input: IParseInput): IParseInput => {
     return input;
   }
   const parts = input.query.split(' ');
-  const cleanParts = parts.map(part => part.replace(/,/g, ''));
+  const cleanParts = parts.map((part) => part.replace(/,/g, ''));
   return { ...input, parts: cleanParts };
 };
 
@@ -29,14 +29,24 @@ export const cleanKeywords = (input: IParseInput) => {
     return input;
   }
 
-  const cleanedParts = parts?.reduce((acc, part, index) => {
+  const cleanedParts = parts?.reduce((acc, part) => {
     const prevValue = acc[acc.length - 1];
 
-    if ((prevValue === 'GROUP' || prevValue === 'ORDER') && part !== 'BY') {
+    if (
+      (prevValue === 'GROUP' ||
+        prevValue === 'ORDER' ||
+        prevValue === 'SORT') &&
+      part !== 'BY'
+    ) {
       throw new Error('Please ensure your GROUP BY is followed by BY');
     }
 
-    if ((prevValue === 'GROUP' || prevValue === 'ORDER') && part === 'BY') {
+    if (
+      (prevValue === 'GROUP' ||
+        prevValue === 'ORDER' ||
+        prevValue === 'SORT') &&
+      part === 'BY'
+    ) {
       const payload = [[...acc.slice(0, -1)], `${prevValue} ${part}`].flat();
 
       return payload;
@@ -70,7 +80,7 @@ export const getParts =
 
       if (currentSection) {
         acc[currentSection as SectionKeys].push(word);
-        return acc
+        return acc;
       }
 
       return acc;
