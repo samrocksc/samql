@@ -1,23 +1,18 @@
+import { makeAdapter, processQuery } from '../retriever-adapter';
 import { log } from './logger';
 import { parse } from './parser';
-import { IOperationRecord } from './sql-operations';
+import { IOperationRecord, sqlSections } from './sql-operations';
 
 export type BaseQuery = string;
 
 export type IQueryInput = Readonly<{
-  headers: string[];
+  // Lock this down as tight as possible to maintain index integrity
+  tableName: string;
+  headers: Readonly<string[]>;
   data: unknown[][];
   errors: Papa.ParseError[];
   meta: Papa.ParseMeta;
   operations: IOperationRecord;
-}>;
-
-export type Query = Readonly<{
-  SELECT?: string[];
-  PROJECT?: string[];
-  FROM?: string[];
-  WHERE?: string[];
-  ORDER?: [string, string];
 }>;
 
 export type IQueryOutput = Readonly<{
@@ -29,13 +24,19 @@ export const query =
   (dataset: IQueryInput) =>
   async (query: string): Promise<IQueryOutput> => {
     console.time('query');
-    log.query('query', query);
     const parsedQuery = parse({
       ...dataset,
       query,
     });
     console.timeEnd('query');
-    console.log('parts', parsedQuery);
+    log.query('query', parsedQuery);
+    console.time('retrieve');
+    const adapter = makeAdapter(sqlSections)(parsedQuery);
+    const result = await processQuery(adapter)(parsedQuery);
+    log.query('result', result);
+    console.timeEnd('retrieve');
+    console.time('filter');
+    console.timeEnd('filter');
     return {
       rows: 0,
       data: [],
