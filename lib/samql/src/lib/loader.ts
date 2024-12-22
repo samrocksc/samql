@@ -24,12 +24,11 @@ export const load = (file: string): ILoadOutput => {
     data: data as unknown[][],
     errors: parseData.errors,
     meta: parseData.meta,
-    operations: [],
+    operations: {},
   };
 
   return {
     ...normalizedData,
-    operations: [],
     query: query(normalizedData),
   };
 };
