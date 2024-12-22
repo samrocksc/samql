@@ -1,6 +1,11 @@
 // import { pipeline } from 'stream';
-import { sqlSections } from './sql-operations';
+import {
+  ISqlSections,
+  logicOperators,
+  SectionKeys,
+} from './sql-operations';
 import { BaseQuery, IQueryInput } from './query';
+import { log } from './logger';
 
 export type IParseInput = IQueryInput &
   Readonly<{ query: BaseQuery; parts?: string[] }>;
@@ -12,6 +17,7 @@ export type IParseOutput = IParseInput;
  */
 export const splitStrings = (input: IParseInput): IParseInput => {
   const parts = input.query.split(' ');
+  log.parse('splitStrings', parts);
   return { ...input, parts };
 };
 
@@ -21,7 +27,6 @@ export const cleanKeywords = (input: IParseInput) => {
   const { parts } = input;
 
   if (!parts?.length) {
-    console.log('input', input);
     return input;
   }
 
@@ -44,39 +49,41 @@ export const cleanKeywords = (input: IParseInput) => {
   return { ...input, parts: cleanedParts };
 };
 
-export const getParts = (input: IParseInput) => {
-  let currentSection = '';
-  if (!input.parts) {
-    return input;
-  }
+export const getParts =
+  (input: IParseInput) =>
+  (section: Partial<ISqlSections>): IParseInput => {
+    let currentSection = '';
+    if (!input.parts) {
+      return input;
+    }
 
-  const operations = input.parts.reduce((acc, word) => {
-    if (Object.keys(sqlSections).includes(word.toUpperCase())) {
-      currentSection = word;
-      acc[currentSection.toUpperCase()] = [];
+    /**
+     * this was a bit of a hard section to filter, hence the mutability and ugly casing. I learned a lot ab out
+     * how typescript infers its types, and the limitations of the concept here
+     */
+    const operations = input.parts.reduce((acc, word) => {
+      const wordUp = word.toUpperCase();
+      if (Object.keys(section).includes(wordUp)) {
+        currentSection = wordUp;
+        acc[currentSection as SectionKeys] = [];
+        return acc;
+      }
+
+      if (currentSection) {
+        acc[currentSection as SectionKeys].push(word);
+      }
+
       return acc;
-    }
+    }, {} as Record<SectionKeys, string[]>);
 
-    if (currentSection) {
-      acc[currentSection].push(word);
-    }
-
-    return acc;
-  }, {} as Record<string, string[]>);
-
-  console.log('newValues', operations);
-  return {
-    ...input,
-    operations,
+    log.parse('getParts', operations);
+    return {
+      ...input,
+      operations: operations as IQueryInput['operations'],
+    };
   };
-};
 
-export const handleAndOr = (input: IParseInput) => {
-  console.log(
-    'Object.entries(input.operations)',
-    Object.entries(input.operations)
-  );
-
+export const handleLogicOperations = (input: IParseInput) => {
   return input;
 };
 
@@ -89,5 +96,9 @@ export const checkColumns = (input: IParseInput) => input;
 export const getOrders = (input: IParseInput) => input;
 
 export const parse = (input: IParseInput) => {
-  return getParts(cleanKeywords(splitStrings(input)));
+  const split = splitStrings(input);
+  const cleaned = cleanKeywords(split);
+  const parts = getParts(cleaned)(logicOperators);
+  const handledAndOr = handleLogicOperations(parts);
+  return handledAndOr;
 };

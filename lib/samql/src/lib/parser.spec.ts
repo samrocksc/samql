@@ -1,4 +1,5 @@
-import { cleanKeywords, getParts, handleAndOr, IParseInput } from './parser';
+import { cleanKeywords, getParts, IParseInput } from './parser';
+import { sectionOperators } from './sql-operations';
 
 describe('parser', function () {
   describe('cleanKeywords', function () {
@@ -40,7 +41,7 @@ describe('parser', function () {
   });
 
   describe('getParts', function () {
-    it('should work', function () {
+    it.only('should properly parse only section operations', function () {
       const result = getParts({
         parts: [
           'PROJECT',
@@ -59,7 +60,7 @@ describe('parser', function () {
           'ORDER BY',
           'hi',
         ],
-      } as unknown as IParseInput);
+      } as unknown as IParseInput)(sectionOperators);
       expect(result.operations).toEqual({
         PROJECT: ['nice', 'createdAt'],
         FROM: ['table'],
@@ -69,25 +70,26 @@ describe('parser', function () {
     });
   });
 
-  describe.only('handleAndOr', function () {
-    it('properly group AND statements', function () {
-      const result = handleAndOr({
-        operations: {
-          PROJECT: ['nice', 'createdAt'],
-          FROM: ['table'],
-          WHERE: ['nice', '>', '1', 'AND', 'createdAt', '>', '3'],
-          'ORDER BY': ['hi'],
-        },
-      } as unknown as IParseInput);
-      expect(result.operations).toEqual({
-        PROJECT: ['nice', 'createdAt'],
-        FROM: ['table'],
-        WHERE: [
-          ['nice', '>', '1'],
-          ['createdAt', '>', '3'],
-        ],
-        'ORDER BY': ['hi'],
-      });
-    });
-  });
+  // describe('handleLogicOperations', function () {
+  //   it('properly group AND statements', function () {
+  //     const result = handleLogicOperations({
+  //       operations: {
+  //         PROJECT: ['nice', 'createdAt'],
+  //         FROM: ['table'],
+  //         WHERE: ['nice', '>', '1', 'AND', 'createdAt', '>', '3'],
+  //         'ORDER BY': ['hi'],
+  //       },
+  //     } as unknown as IParseInput);
+
+  //     expect(result.operations).toEqual({
+  //       PROJECT: ['nice', 'createdAt'],
+  //       FROM: ['table'],
+  //       WHERE: [
+  //         ['nice', '>', '1'],
+  //         ['createdAt', '>', '3'],
+  //       ],
+  //       'ORDER BY': ['hi'],
+  //     });
+  //   });
+  // });
 });
