@@ -1,11 +1,9 @@
-import { log } from './logger';
-
 export const sectionKeys = [
   'AND',
   'FILTER',
   'FROM',
   'GROUP BY',
-  'HAVING',
+  'INSERT',
   'LIMIT',
   'ORDER BY',
   'PROJECT',
@@ -15,111 +13,101 @@ export const sectionKeys = [
 
 export type SectionKeys = (typeof sectionKeys)[number];
 
-export const taskCategory = ['LOGICAL', 'OPERATOR'] as const;
+export const taskCategory = [
+  'LOGICAL',
+  'OPERATOR',
+  'COMMAND',
+  'SINGLE_VALUE',
+] as const;
 
 export type TaskCategory = (typeof taskCategory)[number];
 
 export type TaskTree = Readonly<{
   categories: TaskCategory[];
   description: string;
-  sequence: number;
+  operation: (input: unknown) => unknown;
   required: boolean;
-  operation: (input: unknown) => void;
+  sequence: number;
 }>;
 
 export type SqlSection = Readonly<{ [K in SectionKeys]: TaskTree }>;
 
+/**
+ * This is the list of all the SQL sections and their descriptions.  I utilize this as
+ * an AST
+ */
 export const sqlSections: SqlSection = {
   AND: {
     categories: ['LOGICAL'],
     description: 'Adds an AND condition',
-    sequence: 7,
+    operation: (input: unknown) => Error('not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('AND', input);
-    },
+    sequence: 7,
   },
   FILTER: {
     categories: ['OPERATOR'],
     description: 'Filters rows based on conditions',
-    sequence: 3,
+    operation: (input: unknown) => Error('not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('FILTER', input);
-    },
+    sequence: 3,
   },
   FROM: {
     categories: ['OPERATOR'],
     description: 'What table to select from',
-    sequence: 2,
+    operation: () => Error('not implemented yet'),
     required: true,
-    operation: (input: unknown) => {
-      log.debug('FROM', input);
-    },
+    sequence: 2,
   },
   'GROUP BY': {
     categories: ['OPERATOR'],
     description:
       'Groups rows that have the same values, MUST be followed by BY and column name',
-    sequence: 4,
+    operation: () => Error('not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('GROUP', input);
-    },
+    sequence: 4,
   },
-  HAVING: {
-    categories: ['OPERATOR'],
+  INSERT: {
+    categories: ['COMMAND'],
     description: 'Filters groups based on conditions',
+    operation: () => Error('not implemented yet'),
     sequence: 5,
     required: false,
-    operation: (input: unknown) => {
-      log.debug('HAVING', input);
-    },
   },
   LIMIT: {
-    categories: ['OPERATOR'],
+    categories: ['OPERATOR', 'SINGLE_VALUE'],
     description: 'Limits number of returned rows',
-    sequence: 7,
+    operation: () => Error('not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('LIMIT', input);
-    },
+    sequence: 7,
   },
   'ORDER BY': {
-    categories: ['OPERATOR'],
-    description: 'Sorts the result set, MUST be followed by BY',
-    sequence: 6,
+    categories: ['OPERATOR', 'SINGLE_VALUE'],
+    description: 'chooses ordering',
+    operation: () => Error('not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('ORDER', input);
-    },
+    sequence: 7,
   },
   PROJECT: {
     categories: ['OPERATOR'],
     description: 'Specifies which columns to return',
+    operation: () => Error('not implemented yet'),
     required: true,
     sequence: 1,
-    operation: (input: unknown) => {
-      log.debug('PROJECT', input);
-    },
   },
   SELECT: {
     categories: ['OPERATOR'],
     description: 'Specifies which columns to return',
-    sequence: 1,
+
+    operation: () => Error('Not implemented yet'),
     required: true,
-    operation: (input: unknown) => {
-      log.debug('SELECT', input);
-    },
+    sequence: 1,
   },
   WHERE: {
     categories: ['OPERATOR'],
     description: 'Filters rows based on conditions',
-    sequence: 3,
+    operation: () => Error('Not implemented yet'),
     required: false,
-    operation: (input: unknown) => {
-      log.debug('WHERE', input);
-    },
+    sequence: 3,
   },
 } as const;
 
@@ -132,23 +120,21 @@ export type ISqlItem = Record<keyof typeof sqlSections, string[]>;
 export type IOperationRecord = Readonly<{ [K in ISqlSection]?: string[] }>;
 
 /**
- * Returns a list of all the sections that are operators.  I put this in a file load
- * scope so that these functions will only ever need to be ran once on startup.
+ * The goal below is to create a dynamic list of categories on startup
  */
-export const sectionOperators = (
-  Object.keys(sqlSections) as SectionKeys[]
-).reduce((acc, key) => {
-  if (sqlSections[key].categories.includes('OPERATOR')) {
-    return { ...acc, [key]: sqlSections[key] };
-  }
-  return acc;
-}, {} as Record<string, TaskTree>);
+const makeCategoryList = (key: TaskCategory) =>
+  (Object.keys(sqlSections) as SectionKeys[]).reduce((acc, section) => {
+    if (sqlSections[section].categories.includes(key)) {
+      return { ...acc, [section]: sqlSections[section] };
+    }
+    return acc;
+  }, {} as Record<string, TaskTree>);
 
-export const logicOperators = (
-  Object.keys(sqlSections) as SectionKeys[]
-).reduce((acc, key) => {
-  if (sqlSections[key].categories.includes('LOGICAL')) {
-    return { ...acc, [key]: sqlSections[key] };
-  }
-  return acc;
-}, {} as Record<string, TaskTree>);
+export const logicOperators = makeCategoryList('LOGICAL');
+export const sectionOperators = makeCategoryList('OPERATOR');
+/**
+ * 
+ */
+export const singleValueOperators = Object.keys(
+  makeCategoryList('SINGLE_VALUE')
+).map((key) => key);
