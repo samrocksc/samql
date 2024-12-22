@@ -5,16 +5,6 @@ export const log = {
   error: debug('samql:error'),
   debug: debug('samql:debug'),
   query: debug('samql:query'),
+  parse: debug('samql:parse'),
+  retrieve: debug('samql:retrieve'),
 } as const;
-
-/**
- * side effect friendly passthrough logger
- */
-export const pipeLog = (input: unknown, mode: keyof typeof log) => {
-  try {
-    log[mode](input);
-    return input;
-  } catch (_error) {
-    return input;
-  }
-};
