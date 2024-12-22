@@ -1,9 +1,5 @@
 // import { pipeline } from 'stream';
-import {
-  ISqlSections,
-  logicOperators,
-  SectionKeys,
-} from './sql-operations';
+import { ISqlSections, SectionKeys, sectionOperators } from './sql-operations';
 import { BaseQuery, IQueryInput } from './query';
 import { log } from './logger';
 
@@ -17,7 +13,6 @@ export type IParseOutput = IParseInput;
  */
 export const splitStrings = (input: IParseInput): IParseInput => {
   const parts = input.query.split(' ');
-  log.parse('splitStrings', parts);
   return { ...input, parts };
 };
 
@@ -76,7 +71,6 @@ export const getParts =
       return acc;
     }, {} as Record<SectionKeys, string[]>);
 
-    log.parse('getParts', operations);
     return {
       ...input,
       operations: operations as IQueryInput['operations'],
@@ -97,8 +91,9 @@ export const getOrders = (input: IParseInput) => input;
 
 export const parse = (input: IParseInput) => {
   const split = splitStrings(input);
+  log.parse('split', split);
   const cleaned = cleanKeywords(split);
-  const parts = getParts(cleaned)(logicOperators);
-  const handledAndOr = handleLogicOperations(parts);
-  return handledAndOr;
+  log.parse('clean', cleaned);
+  const parts = getParts(cleaned)(sectionOperators);
+  return parts as IParseOutput;
 };

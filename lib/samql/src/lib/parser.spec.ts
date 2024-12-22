@@ -41,7 +41,7 @@ describe('parser', function () {
   });
 
   describe('getParts', function () {
-    it.only('should properly parse only section operations', function () {
+    it('should properly parse only section operations', function () {
       const result = getParts({
         parts: [
           'PROJECT',
@@ -69,27 +69,4 @@ describe('parser', function () {
       });
     });
   });
-
-  // describe('handleLogicOperations', function () {
-  //   it('properly group AND statements', function () {
-  //     const result = handleLogicOperations({
-  //       operations: {
-  //         PROJECT: ['nice', 'createdAt'],
-  //         FROM: ['table'],
-  //         WHERE: ['nice', '>', '1', 'AND', 'createdAt', '>', '3'],
-  //         'ORDER BY': ['hi'],
-  //       },
-  //     } as unknown as IParseInput);
-
-  //     expect(result.operations).toEqual({
-  //       PROJECT: ['nice', 'createdAt'],
-  //       FROM: ['table'],
-  //       WHERE: [
-  //         ['nice', '>', '1'],
-  //         ['createdAt', '>', '3'],
-  //       ],
-  //       'ORDER BY': ['hi'],
-  //     });
-  //   });
-  // });
 });
