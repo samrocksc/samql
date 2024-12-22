@@ -8,6 +8,7 @@ export const sectionKeys = [
   'ORDER BY',
   'PROJECT',
   'SELECT',
+  'SORT BY',
   'WHERE',
 ] as const;
 
@@ -18,6 +19,7 @@ export const taskCategory = [
   'OPERATOR',
   'COMMAND',
   'SINGLE_VALUE',
+  'BY',
 ] as const;
 
 export type TaskCategory = (typeof taskCategory)[number];
@@ -59,7 +61,7 @@ export const sqlSections: SqlSection = {
     sequence: 2,
   },
   'GROUP BY': {
-    categories: ['OPERATOR'],
+    categories: ['OPERATOR', 'BY'],
     description:
       'Groups rows that have the same values, MUST be followed by BY and column name',
     operation: () => Error('not implemented yet'),
@@ -81,7 +83,7 @@ export const sqlSections: SqlSection = {
     sequence: 7,
   },
   'ORDER BY': {
-    categories: ['OPERATOR', 'SINGLE_VALUE'],
+    categories: ['OPERATOR', 'SINGLE_VALUE', 'BY'],
     description: 'chooses ordering',
     operation: () => Error('not implemented yet'),
     required: false,
@@ -97,10 +99,16 @@ export const sqlSections: SqlSection = {
   SELECT: {
     categories: ['OPERATOR'],
     description: 'Specifies which columns to return',
-
     operation: () => Error('Not implemented yet'),
     required: true,
     sequence: 1,
+  },
+  'SORT BY': {
+    categories: ['OPERATOR', 'SINGLE_VALUE', 'BY'],
+    description: 'chooses ordering',
+    operation: () => Error('not implemented yet'),
+    required: false,
+    sequence: 7,
   },
   WHERE: {
     categories: ['OPERATOR'],
@@ -132,9 +140,3 @@ const makeCategoryList = (key: TaskCategory) =>
 
 export const logicOperators = makeCategoryList('LOGICAL');
 export const sectionOperators = makeCategoryList('OPERATOR');
-/**
- * 
- */
-export const singleValueOperators = Object.keys(
-  makeCategoryList('SINGLE_VALUE')
-).map((key) => key);
