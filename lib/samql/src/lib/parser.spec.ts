@@ -1,7 +1,15 @@
-import { cleanKeywords, getParts, IParseInput } from './parser';
+import { cleanKeywords, getParts, IParseInput, splitStrings } from './parser';
 import { sectionOperators } from './sql-operations';
 
 describe('parser', function () {
+  describe('splitStrings', function () {
+    it('should clean commas off of words', function () {
+      const result = splitStrings({
+        query: 'hi, there',
+      } as unknown as IParseInput);
+      expect(result.parts).toEqual(['hi', 'there']);
+    });
+  });
   describe('cleanKeywords', function () {
     it('should return the input if there are no parts', function () {
       const result = cleanKeywords({ parts: [] } as unknown as IParseInput);

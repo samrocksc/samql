@@ -12,8 +12,12 @@ export type IParseOutput = IParseInput;
  * splits strings and ensures GROUP BY and ORDER BY are split correctly
  */
 export const splitStrings = (input: IParseInput): IParseInput => {
+  if (!input.query) {
+    return input;
+  }
   const parts = input.query.split(' ');
-  return { ...input, parts };
+  const cleanParts = parts.map(part => part.replace(/,/g, ''));
+  return { ...input, parts: cleanParts };
 };
 
 /**
@@ -66,6 +70,7 @@ export const getParts =
 
       if (currentSection) {
         acc[currentSection as SectionKeys].push(word);
+        return acc
       }
 
       return acc;
