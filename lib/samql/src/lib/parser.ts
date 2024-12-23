@@ -92,17 +92,11 @@ export const getParts =
     };
   };
 
-export const handleLogicOperations = (input: IParseInput) => {
-  return input;
-};
+// TODO implement a function that handles logical like AND
+export const handleLogicOperations = (input: IParseInput) => input;
 
-export const getProjections = (input: IParseInput): IParseInput => input;
-
-export const getFilters = (input: IParseInput) => input;
-
+// TODO: implement a function that checks that all columns are valid
 export const checkColumns = (input: IParseInput) => input;
-
-export const getOrders = (input: IParseInput) => input;
 
 export const parse = (input: IParseInput) => {
   const split = splitStrings(input);
