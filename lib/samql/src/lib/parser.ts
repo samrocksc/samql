@@ -30,21 +30,15 @@ export const cleanKeywords = (input: IParseInput) => {
   }
 
   const cleanedParts = parts?.reduce((acc, part) => {
+    const byOperators = ['GROUP', 'ORDER', 'SORT'];
     const prevValue = acc[acc.length - 1];
 
-    if (
-      (prevValue === 'GROUP' ||
-        prevValue === 'ORDER' ||
-        prevValue === 'SORT') &&
-      part !== 'BY'
-    ) {
+    if (byOperators.includes(prevValue) && part !== 'BY') {
       throw new Error('Please ensure your GROUP BY is followed by BY');
     }
 
     if (
-      (prevValue === 'GROUP' ||
-        prevValue === 'ORDER' ||
-        prevValue === 'SORT') &&
+      byOperators.includes(prevValue) &&
       part === 'BY'
     ) {
       const payload = [[...acc.slice(0, -1)], `${prevValue} ${part}`].flat();
