@@ -12,22 +12,21 @@ export type ILoadOutput = IQueryInput &
 /**
  * Load a file and return its content as a string.  Will throw if invalid CSV data
  */
-export const load = (
+export const load = async (
   file: string,
   options?: {
     tableName: string;
   }
-): ILoadOutput => {
+): Promise<ILoadOutput> => {
   const parseData = Papa.parse(file, {
     dynamicTyping: true,
     header: true,
   });
-  
 
   const normalizedData: IQueryInput = {
     tableName: options?.tableName ?? 'default',
     headers: parseData.meta.fields as string[],
-    data: parseData.data as IQueryInput["data"],
+    data: parseData.data as IQueryInput['data'],
     errors: parseData.errors,
     meta: parseData.meta,
     operations: {},
