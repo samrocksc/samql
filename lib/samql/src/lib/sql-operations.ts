@@ -79,7 +79,7 @@ export const sqlSections: SqlSection = {
   },
   INSERT: {
     categories: ['COMMAND'],
-    description: 'Filters groups based on conditions',
+    description: 'Adds a new row to the table',
     operation: () => Error('not implemented yet'),
     sequence: 5,
     required: false,

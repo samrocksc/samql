@@ -24,6 +24,7 @@ export const load = async (
   });
 
   const normalizedData: IQueryInput = {
+    fileName: file,
     tableName: options?.tableName ?? 'default',
     headers: parseData.meta.fields as string[],
     data: parseData.data as IQueryInput['data'],

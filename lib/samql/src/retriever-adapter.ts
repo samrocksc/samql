@@ -3,6 +3,7 @@ import { convertMultipleOperations, operandFilter } from './lib/operand-filter';
 import { IParseOutput } from './lib/parser';
 import { IQueryInput } from './lib/query';
 import { SqlSection } from './lib/sql-operations';
+import { insert } from './lib/insert';
 
 // I want the output to be an object of keys from sqlSections and each value an async function of differing signatures
 
@@ -64,6 +65,10 @@ export const makeAdapter =
           const result = operandFilter(input, datasource);
           return result;
         },
+      },
+      INSERT: {
+        ...sqlSections.INSERT,
+        operation: insert,
       },
       WHERE: {
         ...sqlSections.WHERE,

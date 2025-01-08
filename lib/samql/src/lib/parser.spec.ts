@@ -96,7 +96,7 @@ describe('parser', function () {
             'AND',
             'createdAt',
             '>',
-            '3',
+         '3',
             'OR',
             'createdAt',
             '<',
