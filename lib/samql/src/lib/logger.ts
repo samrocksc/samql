@@ -7,4 +7,5 @@ export const log = {
   query: debug('samql:query'),
   parse: debug('samql:parse'),
   retrieve: debug('samql:retrieve'),
+  write: debug('samql:write'),
 } as const;

@@ -1,4 +1,10 @@
-import { cleanKeywords, getParts, IParseInput, splitStrings } from './parser';
+import {
+  cleanKeywords,
+  getParts,
+  handleLogicOperations,
+  IParseInput,
+  splitStrings,
+} from './parser';
 import { sectionOperators } from './sql-operations';
 
 describe('parser', function () {
@@ -74,6 +80,43 @@ describe('parser', function () {
         FROM: ['table'],
         WHERE: ['nice', '>', '1', 'AND', 'createdAt', '>', '3'],
         'ORDER BY': ['hi'],
+      });
+    });
+  });
+  describe('handleLogicOperations', function () {
+    it.only('should parse out AND/OR properly', function () {
+      const result = handleLogicOperations({
+        operations: {
+          PROJECT: ['nice', 'createdAt'],
+          FROM: ['table'],
+          WHERE: [
+            'nice',
+            '>',
+            '1',
+            'AND',
+            'createdAt',
+            '>',
+         '3',
+            'OR',
+            'createdAt',
+            '<',
+            '4',
+          ],
+          'ORDER BY': ['hi'],
+        },
+      } as unknown as IParseInput);
+
+      expect(result).toEqual({
+        operations: {
+          PROJECT: ['nice', 'createdAt'],
+          FROM: ['table'],
+          WHERE: [
+            ['nice', '>', '1'],
+            ['createdAt', '>', '3'],
+            ['createdAt', '<', '4'],
+          ],
+          'ORDER BY': ['hi'],
+        },
       });
     });
   });

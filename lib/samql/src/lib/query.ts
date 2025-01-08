@@ -8,6 +8,7 @@ export type BaseQuery = string;
 
 export type IQueryInput = Readonly<{
   // Lock this down as tight as possible to maintain index integrity
+  fileName: string;
   tableName: string;
   headers: Readonly<string[]>;
   data: Record<string, unknown>[];

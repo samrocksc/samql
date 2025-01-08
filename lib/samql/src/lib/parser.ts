@@ -1,4 +1,3 @@
-// import { pipeline } from 'stream';
 import { ISqlSections, SectionKeys, sectionOperators } from './sql-operations';
 import { BaseQuery, IQueryInput } from './query';
 import { log } from './logger';
@@ -37,10 +36,8 @@ export const cleanKeywords = (input: IParseInput) => {
       throw new Error('Please ensure your GROUP BY is followed by BY');
     }
 
-    if (
-      byOperators.includes(prevValue) &&
-      part === 'BY'
-    ) {
+    if (byOperators.includes(prevValue) && part === 'BY') {
+      // remove the last value here and then add in the new value
       const payload = [[...acc.slice(0, -1)], `${prevValue} ${part}`].flat();
 
       return payload;
@@ -86,8 +83,42 @@ export const getParts =
     };
   };
 
-// TODO implement a function that handles logical like AND
-export const handleLogicOperations = (input: IParseInput) => input;
+/**
+ * Indescriminately breaks apart And and Or statements.
+ * We would need to figure out the order of operations for these.
+ */
+export const handleLogicOperations = (input: IParseInput) => {
+  const { operations } = input;
+  if (!operations?.WHERE) {
+    return input;
+  }
+
+  /**
+   * split every and statement out and return array of arrays
+   **/
+  const combinedAndOr = operations.WHERE.reduce(
+    (acc, word) => {
+      if (word === 'AND' || word === 'OR') {
+        acc.push([]);
+        return acc;
+      }
+
+      acc[acc.length - 1].push(word);
+      return acc;
+    },
+    [[]] as string[][]
+  );
+
+  // I did this immutably
+  const result = {
+    ...input,
+    operations: {
+      ...input.operations,
+      WHERE: combinedAndOr,
+    },
+  };
+  return result;
+};
 
 // TODO: implement a function that checks that all columns are valid
 export const checkColumns = (input: IParseInput) => input;
@@ -98,5 +129,8 @@ export const parse = (input: IParseInput) => {
   const cleaned = cleanKeywords(split);
   log.parse('clean', cleaned);
   const parts = getParts(cleaned)(sectionOperators);
-  return parts as IParseOutput;
+  log.parse('parts', parts);
+  const withLogicParts = handleLogicOperations(parts);
+  log.parse('withLogicParts', withLogicParts);
+  return withLogicParts as IParseOutput;
 };
