@@ -17,8 +17,13 @@ app.listen(port, host, async () => {
     .document()
     .load(fs.readFileSync(path.resolve(__dirname, './users.csv'), 'utf-8'));
 
-  const data = await users.query(
+  const filterData = await users.query(
     'PROJECT name, id FILTER id < 2 SORT BY name'
   );
-  console.log('final result', data);
+  console.log('filter result', filterData);
+
+const whereResult = await users.query(
+    'PROJECT name, id WHERE id < 2 AND id > 2 SORT BY name'
+  );
+  console.log('final result', whereResult);
 });

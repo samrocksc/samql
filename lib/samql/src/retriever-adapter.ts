@@ -1,4 +1,5 @@
 import { log } from './lib/logger';
+import { convertMultipleOperations, operandFilter } from './lib/operand-filter';
 import { IParseOutput } from './lib/parser';
 import { IQueryInput } from './lib/query';
 import { SqlSection } from './lib/sql-operations';
@@ -19,46 +20,6 @@ export type IWhere = Readonly<
 const extractKeys =
   (keys: Readonly<string[]>) => (obj: Record<Readonly<string>, unknown>) =>
     keys.reduce((acc, key) => ({ ...acc, [key]: obj[key] }), {});
-
-const operandFilter = (input: IWhere, datasource: Record<string, unknown>[]) =>
-  datasource.filter((datum) => {
-    const [left, operator, right] = input;
-    const leftVal = datum[left];
-    switch (operator) {
-      case '==': {
-        return left === right;
-      }
-      case '!=': {
-        return left !== right;
-      }
-      case '>': {
-        if (typeof leftVal === 'number') {
-          return leftVal > Number(right);
-        }
-        return false;
-      }
-      case '<': {
-        if (typeof leftVal === 'number') {
-          return leftVal < Number(right);
-        }
-        return false;
-      }
-      case '>=': {
-        if (typeof leftVal === 'number') {
-          return leftVal >= Number(right);
-        }
-        return false;
-      }
-      case '<=': {
-        if (typeof leftVal === 'number') {
-          return leftVal <= Number(right);
-        }
-        return false;
-      }
-      default:
-        throw new Error(`Unknown operator: ${operator}`);
-    }
-  });
 
 /**
  * makeAdapter creates an adapter for the current query
@@ -94,13 +55,24 @@ export const makeAdapter =
         },
       },
       FILTER: {
-        ...sqlSections.WHERE,
+        ...sqlSections.FILTER,
         operation: async (
           input: IWhere,
           datasource: Record<string, unknown>[]
         ) => {
           log.retrieve('WHERE', input);
           const result = operandFilter(input, datasource);
+          return result;
+        },
+      },
+      WHERE: {
+        ...sqlSections.WHERE,
+        operation: async (
+          input: IWhere[],
+          datasource: Record<string, unknown>[]
+        ) => {
+          log.retrieve('WHERE', input);
+          const result = convertMultipleOperations(input, datasource);
           return result;
         },
       },
@@ -151,38 +123,30 @@ export const sortAdapter = (adapter: Adapter): Adapter => {
 export const processQuery =
   (adapter: Adapter) => async (query: IParseOutput) => {
     const sortedAdapter = sortAdapter(adapter);
-    const aggregatedResults = await Object.entries(sortedAdapter).reduce(
-      // TIL: You can use async functions in reduce
-      async (promise, [adapterOperationName, retriever]) => {
-        // kind of janky, but it works, apologies
-        const acc = await promise;
-        const operationKey =
-          adapterOperationName as keyof typeof queryOperationParameters;
-        const queryOperationParameters = query.operations;
+    let aggregatedResults = query;
 
-        if (
-          queryOperationParameters?.[
-            adapterOperationName as keyof typeof queryOperationParameters
-          ]
-        ) {
-          const params = queryOperationParameters?.[operationKey] as any;
-          const result = (await retriever.operation(
-            params,
-            acc.data
-          )) as IQueryInput['data'];
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { [operationKey]: _, ...restOperations } = acc.operations;
-          const data = {
-            ...acc,
-            operations: restOperations,
-            data: result,
-          };
-          return data;
-        }
-        return acc;
-      },
-      Promise.resolve(query)
-    );
+    for (const [adapterOperationName, retriever] of Object.entries(
+      sortedAdapter
+    )) {
+      const operationKey =
+        adapterOperationName as keyof typeof queryOperationParameters;
+      const queryOperationParameters = query.operations;
+
+      if (queryOperationParameters?.[operationKey]) {
+        const params = queryOperationParameters?.[operationKey] as any;
+        const result = (await retriever.operation(
+          params,
+          aggregatedResults.data
+        )) as IQueryInput['data'];
+        const { [operationKey]: _, ...restOperations } =
+          aggregatedResults.operations;
+        aggregatedResults = {
+          ...aggregatedResults,
+          operations: restOperations,
+          data: result,
+        };
+      }
+    }
 
     return {
       rows: aggregatedResults.data.length,

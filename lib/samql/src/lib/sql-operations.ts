@@ -1,3 +1,6 @@
+/**
+ * Adds section keys as a const, so that way we no longer have to deal with the manual typing of this.
+ */
 export const sectionKeys = [
   'AND',
   'FILTER',
@@ -12,8 +15,14 @@ export const sectionKeys = [
   'WHERE',
 ] as const;
 
+/**
+* Gives us an enum type result
+*/
 export type SectionKeys = (typeof sectionKeys)[number];
 
+/**
+ * A list of categories for the type of operators
+ */
 export const taskCategory = [
   'LOGICAL',
   'OPERATOR',
@@ -49,7 +58,7 @@ export const sqlSections: SqlSection = {
   FILTER: {
     categories: ['OPERATOR'],
     description: 'Filters rows based on conditions',
-    operation: (input: unknown) => Error('not implemented yet'),
+    operation: () => Error('not implemented yet'),
     required: false,
     sequence: 3,
   },
